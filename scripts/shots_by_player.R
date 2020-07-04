@@ -21,8 +21,10 @@ flyers <- players%>%
 
 id <- 8473512
 
+outDf <- data.frame()
 # Game data
-gameGet <- GET("https://statsapi.web.nhl.com/api/v1/game/2019020053/feed/live")
+for(i in 1:1271){
+gameGet <- GET(paste0("https://statsapi.web.nhl.com/api/v1/game/201902",str_pad(i,4,pad="0"),"/feed/live"))
 data <- fromJSON(rawToChar(gameGet$content))
 gameTbl <- as.data.frame(data$gameData)
 
@@ -56,7 +58,7 @@ for(n in 1:nrow(shots)){
 
 # Add shooter and goalie columns back to original shot data frame
 shotsDetail <- shots%>%
-  select(eventTypeId,x,y)%>%
+  dplyr::select(eventTypeId,x,y)%>%
   cbind(df)%>%
   mutate(date = ymd_hms(gameTbl$datetime.dateTime),
          homeTeam = as.character(gameTbl$teams.home.name),
@@ -68,12 +70,24 @@ date <- ymd_hms(gameTbl$datetime.dateTime)
 homeTeam <- as.character(gameTbl$teams.home.name)
 awayTeam <- as.character(gameTbl$teams.away.name)
 
+outDf <- rbind(outDf,shotsDetail)
+}
+
+filt <- outDf%>%
+  filter(Shooter == 8473512)%>%
+  mutate(xh = ifelse(x<0,x*(-1),x),
+         yh = y*(-1))
+
+
+
+
+
 goals <- cbind(result,players,coords)%>%
   filter(eventTypeId == "GOAL")
 
 
-outDf <- 
 
+  
 # plotly
 library(plotly)
 
@@ -90,23 +104,18 @@ ax <- list(
 )
 
 p <- plot_ly() %>%
-  add_markers(data = shotsDetail, x= ~x, y= ~y,
+  add_markers(data = filt, x= ~xh, y= ~yh,
               hoverinfo = "text",
               text = ~paste("Shooter: ", Shooter_Name, "<br>",
                             "Goalie: ", Goalie_Name))%>%
-  add_markers(x= goals$x, y=goals$y,marker = list(symbol = vals[13],
-                                                  size = 10,
-                                                  color = 'red',
-                                                  line = list(color = "black",
-                                                              width = 2)))%>%
   layout(
     images = list(
-      list(source =  "https://raw.githubusercontent.com/armurray/NHL_Stats/master/img/rink_full.png",
+      list(source =  "https://raw.githubusercontent.com/armurray/NHL_Stats/master/img/rink_half.png",
            xref = "x",
            yref = "y",
-           x = -100,
+           x = -5,
            y = 42.5,
-           sizex = 200,
+           sizex = 100,
            sizey = 85,
            sizing = "stretch",
            opacity = 0.8,
@@ -119,8 +128,14 @@ p <- plot_ly() %>%
       showline = FALSE,
       showticklabels = FALSE,
       showgrid = FALSE,
-      range = c(-100,100)),
-    yaxis = ax
+      range = c(-5,100)),
+    yaxis = list(
+      title = "",
+      zeroline = FALSE,
+      showline = FALSE,
+      showticklabels = FALSE,
+      showgrid = FALSE,
+      range = c(-42.5,42.5))
   )
 
 p
