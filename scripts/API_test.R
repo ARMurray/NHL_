@@ -47,3 +47,25 @@ goals <- cbind(result,players,coords)%>%
 ggplot()+
   geom_point(data = shotPlays, aes(x = x, y = y), col = 'black', fill = 'black')+
   geom_point(data = goals, aes(x = x, y = y), col = 'red', shape = 4, size = 5)
+
+
+# plotly
+library(plotly)
+
+plot_ly(x = c(1, 100, 200), y = c(1, 50, 100), type = 'scatter', mode = 'markers') %>%
+  layout(
+    images = list(
+      list(
+        source =  "https://github.com/ARMurray/NHL_Stats/blob/master/img/runk_full.jpg?raw=true",
+        xref = "x",
+        yref = "y",
+        x = 1,
+        y = 1,
+        sizex = 200,
+        sizey = 100,
+        sizing = "stretch",
+        opacity = .4,
+        layer = "below"
+      )
+    )
+  )
