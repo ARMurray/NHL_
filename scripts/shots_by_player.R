@@ -74,7 +74,7 @@ outDf <- rbind(outDf,shotsDetail)
 }
 
 filt <- outDf%>%
-  filter(Shooter == 8473512)%>%
+  filter(Shooter %in% flyers$id)%>%
   mutate(xh = ifelse(x<0,x*(-1),x),
          yh = y*(-1))
 
@@ -107,7 +107,8 @@ p <- plot_ly() %>%
   add_markers(data = filt, x= ~xh, y= ~yh,
               hoverinfo = "text",
               text = ~paste("Shooter: ", Shooter_Name, "<br>",
-                            "Goalie: ", Goalie_Name))%>%
+                            "Goalie: ", Goalie_Name),
+              color = ~Shooter_Name)%>%
   layout(
     images = list(
       list(source =  "https://raw.githubusercontent.com/armurray/NHL_Stats/master/img/rink_half.png",
