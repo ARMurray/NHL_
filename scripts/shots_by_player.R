@@ -1,7 +1,8 @@
+library(lubridate)
 library(httr)
 library(jsonlite)
 library(tidyverse)
-library(lubridate)
+
 
 # List of Teams with Info
 teams <- GET("https://statsapi.web.nhl.com/api/v1/teams")
@@ -76,10 +77,8 @@ outDf <- rbind(outDf,shotsDetail)
 filt <- outDf%>%
   filter(Shooter %in% flyers$id)%>%
   mutate(xh = ifelse(x<0,x*(-1),x),
-         yh = y*(-1))
-
-
-
+         yh = y*(-1))%>%
+  droplevels()
 
 
 goals <- cbind(result,players,coords)%>%
@@ -104,19 +103,23 @@ ax <- list(
 )
 
 p <- plot_ly() %>%
+  add_markers(x = c(0,0,100,100), y = c(-42.5,42.5,-20,20), size = 5)%>%
   add_markers(data = filt, x= ~xh, y= ~yh,
               hoverinfo = "text",
               text = ~paste("Shooter: ", Shooter_Name, "<br>",
-                            "Goalie: ", Goalie_Name),
-              color = ~Shooter_Name)%>%
+                            "Goalie: ", Goalie_Name, "<br>",
+                            "X: ", xh,"<br>",
+                            "Y: ", yh),
+              color = ~Shooter_Name,
+              colors = "Paired")%>%
   layout(
     images = list(
       list(source =  "https://raw.githubusercontent.com/armurray/NHL_Stats/master/img/rink_half.png",
            xref = "x",
            yref = "y",
-           x = -5,
+           x = -1,
            y = 42.5,
-           sizex = 100,
+           sizex = 101.5,
            sizey = 85,
            sizing = "stretch",
            opacity = 0.8,
@@ -129,7 +132,7 @@ p <- plot_ly() %>%
       showline = FALSE,
       showticklabels = FALSE,
       showgrid = FALSE,
-      range = c(-5,100)),
+      range = c(-5,105)),
     yaxis = list(
       title = "",
       zeroline = FALSE,
